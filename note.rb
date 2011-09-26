@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-DIR = ENV['XDG_CONFIG_HOME'] + "/rbnote/"
+DIR = ENV['XDG_CONFIG_HOME'] + "/rbnote"
 NOTES_DIR = "#{DIR}/notes"
 NOTE_DAT = "#{DIR}/notes.dat"
 
@@ -24,6 +24,20 @@ def title
   end
 end
 
+def list_notes
+  if File.exists?(NOTE_DAT)
+    file = File.open(NOTE_DAT, "r")
+    notes = file.read.split("\n")
+    file.close
+
+    notes.each_index do |i|
+      puts "#{GREEN}#{i}#{RESET} #{notes[i]}"
+    end
+  else
+    puts "You do not have any notes!"
+  end
+end
+
 if not File.directory?(DIR)
   Dir.mkdir(DIR)
 end
@@ -36,11 +50,17 @@ first = true
 while true do
   title
 
+  if first
+    list_notes
+    first = false
+  end
+
+  print "> "
   c = gets.chomp.downcase
 
   case c
-  when /[0-9]/
-    open_note c
+  when /^[0-9]+$/
+    open_note(c)
   when "n"
     new_note
   when "l"
@@ -54,6 +74,4 @@ while true do
   end
 
   puts
-
-  first = false
 end
