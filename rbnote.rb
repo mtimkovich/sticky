@@ -36,10 +36,9 @@ def prompt
 end
 
 def escape_data(note)
-  note = note.sub("'", "\\\\'")
-  note = note.sub('"', '\"')
-  note = note.sub(" ", "\\ ")
-  note = note.sub("\\", "\\\\\\\\\\")
+  note = note.gsub("'", "\\\\'")
+  note = note.gsub('"', '\"')
+  note = note.gsub(" ", "\\ ")
 
   return note
 end
