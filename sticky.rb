@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 
-DIR = ENV['XDG_CONFIG_HOME'] + "/rbnote"
+PROGRAM_NAME = "sticky"
+
+DIR = ENV['XDG_CONFIG_HOME'] + "/#{PROGRAM_NAME}"
 NOTES_DIR = "#{DIR}/notes"
 NOTE_DAT = "#{DIR}/notes.dat"
 
