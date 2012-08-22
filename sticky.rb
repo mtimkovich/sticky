@@ -1,23 +1,25 @@
 #!/usr/bin/env ruby
+require "sqlite3"
 
 PROGRAM_NAME = "sticky"
 
 DIR = ENV['XDG_CONFIG_HOME'] + "/#{PROGRAM_NAME}"
 NOTES_DIR = "#{DIR}/notes"
-NOTE_DAT = "#{DIR}/notes.dat"
+NOTES_DB = "#{DIR}/notes.db"
 
 OPTIONS = %w[New List Delete Quit]
 EDITOR = ENV['EDITOR'] or "vi"
 
 GREEN = "\033[22;32m"
 BOLD = "\033[01;37m"
-RESET = "\033[00;37m"
+GRAY = "\033[00;37m"
+RESET = "\033[0m"
 
 def title
   print "["
   OPTIONS.each do |option|
-    print BOLD + option[0]
-    print RESET + "-" + option
+    print RESET + option[0]
+    print GRAY + "-" + option
     if not option == OPTIONS.last
       print " "
     else
@@ -27,7 +29,9 @@ def title
 end
 
 def prompt
+  print GRAY
   print "> "
+  print RESET
   user = gets.chomp
 
   if user.empty?
@@ -102,20 +106,24 @@ def open_note(c)
 end
 
 def list_notes
-  if File.exists?(NOTE_DAT)
-    file = File.open(NOTE_DAT, "r")
-    notes = file.read.split("\n")
-    file.close
-  else
-    puts "Note not saved, ignoring"
-  end
+  db = SQLite3::Database.new(NOTES_DB)
+  db.results_as_hash = true
 
-  if File.zero?(NOTE_DAT)
+  db.execute("CREATE TABLE IF NOT EXISTS notes (
+             id INTEGER PRIMARY KEY, 
+             name TEXT
+            )")
+
+  notes = db.execute("SELECT * FROM notes")
+  db.close
+
+  if notes.empty?
     puts "You do not have any notes!"
+    return
   end
 
-  notes.each_index do |i|
-    puts "#{GREEN}#{i}#{RESET} #{notes[i]}"
+  notes.each do |note|
+    puts "#{GREEN}#{note['id']}#{RESET} #{note['name']}"
   end
 end
 
@@ -157,6 +165,10 @@ end
 
 if not File.directory?(NOTES_DIR)
   Dir.mkdir(NOTES_DIR)
+end
+
+if not File.exists?(NOTES_DB)
+  File.open(NOTES_DB, "w") {}
 end
 
 first = true
