@@ -50,9 +50,11 @@ def escape_data(note)
 end
 
 def store_note_name(note_name)
-  file = File.open(NOTE_DAT, "a")
-  file.puts(note_name)
-  file.close
+  db = SQLite3::Database.new(NOTES_DB)
+  
+  db.execute("INSERT INTO notes (name) VALUES (:name)",
+             "name" => note_name)
+  db.close
 end
 
 def new_note
