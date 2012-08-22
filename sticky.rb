@@ -90,31 +90,25 @@ def new_note
 end
 
 def open_note(c)
-  if File.exists?(NOTE_DAT)
-    file = File.open(NOTE_DAT, "r")
-    notes = file.read.split("\n")
-    file.close
-  else
-    abort "Error reading '#{NOTE_DAT}'"
-  end
+  db = SQLite3::Database.new(NOTES_DB)
+  db.results_as_hash = true
+  notes = db.execute("SELECT * FROM notes WHERE id = :id",
+                    "id" => c)
+  db.close
 
-  if c >= notes.length or c < 0
+  if notes.empty?
     puts "Invalid input"
     return
   end
 
-
-  system("#{EDITOR} #{NOTES_DIR}/#{escape_data(notes[c])}")
+  system("#{EDITOR} #{NOTES_DIR}/#{escape_data(notes.first['name'])}")
 end
 
 def list_notes
   db = SQLite3::Database.new(NOTES_DB)
   db.results_as_hash = true
 
-  db.execute("CREATE TABLE IF NOT EXISTS notes (
-             id INTEGER PRIMARY KEY, 
-             name TEXT
-            )")
+  db.execute("CREATE TABLE IF NOT EXISTS notes (id INTEGER PRIMARY KEY, name TEXT)")
 
   notes = db.execute("SELECT * FROM notes")
   db.close
