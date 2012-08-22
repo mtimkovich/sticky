@@ -57,6 +57,16 @@ def store_note_name(note_name)
   db.close
 end
 
+def note_by_id(c)
+  db = SQLite3::Database.new(NOTES_DB)
+  db.results_as_hash = true
+  notes = db.execute("SELECT name FROM notes WHERE id = :id",
+                    "id" => c)
+  db.close
+
+  return notes
+end
+
 def new_note
   puts "Enter note's name"
 
@@ -90,11 +100,7 @@ def new_note
 end
 
 def open_note(c)
-  db = SQLite3::Database.new(NOTES_DB)
-  db.results_as_hash = true
-  notes = db.execute("SELECT * FROM notes WHERE id = :id",
-                    "id" => c)
-  db.close
+  notes = note_by_id(c)
 
   if notes.empty?
     puts "Invalid input"
@@ -133,24 +139,20 @@ def delete_note
     return
   end
 
-  file = File.open(NOTE_DAT, "r")
-  notes = file.read.split("\n")
-  file.close
+  notes = note_by_id(c)
 
-  if c >= notes.length or c < 0
+  if notes.empty?
     puts "Invalid input"
     return
   end
 
-  File.delete("#{NOTES_DIR}/#{notes[c]}")
+  File.delete("#{NOTES_DIR}/#{notes.first['name']}")
 
-  notes.delete_at(c)
+  db = SQLite3::Database.new(NOTES_DB)
+  db.execute("DELETE FROM notes WHERE id = :id",
+             "id" => c)
+  db.close
 
-  file = File.open(NOTE_DAT, "w")
-  notes.each do |note|
-    file.puts(note)
-  end
-  file.close
 end
 
 ### MAIN ###
