@@ -165,10 +165,6 @@ if not File.directory?(NOTES_DIR)
   Dir.mkdir(NOTES_DIR)
 end
 
-if not File.exists?(NOTES_DB)
-  File.open(NOTES_DB, "w") {}
-end
-
 first = true
 while true do
   if first
